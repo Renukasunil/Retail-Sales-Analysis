@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retail Analytics – Executive Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#14213d;--mut:#667085;--line:#e4e8ee;--a:#1f4e8c;--b:#2a9d8f;--c:#e07a3f;--g:#c9d3e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--card:#17202f;--ink:#e8edf5;--mut:#9aa7bb;--line:#26324a;--a:#6aa3e8;--b:#4cc2b2;--c:#f0955c;--g:#32415e}}
+:root[data-theme="dark"]{--bg:#0f1624;--card:#17202f;--ink:#e8edf5;--mut:#9aa7bb;--line:#26324a;--a:#6aa3e8;--b:#4cc2b2;--c:#f0955c;--g:#32415e}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Inter","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+.w{max-width:1240px;margin:0 auto;padding:28px 20px 60px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:20px}
+h1{font-size:28px;margin:0;letter-spacing:-.02em}header p{margin:4px 0 0;color:var(--mut)}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--mut)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:22px}
+.bar label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:3px;text-transform:uppercase;letter-spacing:.05em}
+select,button{font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+button{cursor:pointer;background:var(--a);color:#fff;border:0;margin-left:auto;align-self:flex-end}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mut);margin:38px 0 14px}
+.g{display:grid;gap:16px}.k{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.c{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.kpi small{color:var(--mut);font-size:12px}.kpi b{display:block;font-size:26px;letter-spacing:-.02em;margin-top:4px}
+.c h3{font-size:16px;margin:0 0 2px}.c .sub{color:var(--mut);font-size:13px;margin-bottom:10px}
+.ch{position:relative;height:270px}.ch.t{height:320px}
+.f{display:grid;gap:6px;margin-top:12px;font-size:14px;border-top:1px solid var(--line);padding-top:10px}.f span{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.06em;display:block}
+ul.s{margin:0;padding:0;list-style:none;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+ul.s li{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--a);border-radius:10px;padding:12px 14px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px}
+.note{color:var(--mut);font-size:12px;margin-top:30px}
+.big{font-size:34px;font-weight:600;letter-spacing:-.02em}
+</style></head><body><div class="w">
+<header><div><h1>Retail Analytics</h1><p>Executive view of sales, profit, products, stores, channels and inventory performance.</p></div><div class="pill">Reporting period: Jan 2021 – Oct 2025 · Inventory as of 31 Oct 2025</div></header>
+
+<div class="bar">
+<label>Category<select id="fc"></select></label>
+<label>Year (trend)<select id="fy"></select></label>
+<button id="rs">Reset filters</button></div>
+
+<div class="g k" id="kpis"></div>
+
+<h2>Executive summary</h2>
+<ul class="s">
+<li>Electronics generated the highest sales and profit, far ahead of every other category.</li>
+<li>Sales follow a clear yearly pattern: strong January–February, weakest September–November.</li>
+<li>Dubai is the largest city by sales, followed by Abu Dhabi and Sharjah.</li>
+<li>Stores are the largest channel; the website and mobile app together bring in a large share.</li>
+<li>No product is currently below its reorder point, but many store-product pairs combine high sales with low stock.</li>
+<li>Some products sell well but earn relatively low profit.</li></ul>
+
+<h2>Key business insights</h2>
+<div class="g two">
+<div class="c" style="grid-column:1/-1"><h3>Sales over time</h3><div class="sub" id="trsub">Monthly sales</div><div class="ch t"><canvas id="ch1"></canvas></div>
+<div class="f"><div><span>Finding</span>Sales peak early in the year and drop sharply in September–November, every year.</div><div><span>Business meaning</span>Demand is seasonal, so stock and staffing plans should follow the yearly rhythm.</div></div></div>
+<div class="c"><h3>Sales and profit by category</h3><div class="sub">Click-free: use the Category filter to focus</div><div class="ch"><canvas id="ch2"></canvas></div>
+<div class="f"><div><span>Finding</span>Electronics generated the highest sales and profit.</div><div><span>Business meaning</span>Electronics is the main contributor to overall revenue and profit.</div></div></div>
+<div class="c"><h3>Most profitable product groups</h3><div class="sub">Top 10 by profit</div><div class="ch"><canvas id="ch3"></canvas></div>
+<div class="f"><div><span>Finding</span>Batteries, Cables and Chargers lead profit.</div><div><span>Business meaning</span>Electronics accessories drive the largest share of profit.</div></div></div>
+<div class="c"><h3>Sales by city</h3><div class="sub">Approximate values</div><div class="ch"><canvas id="ch4"></canvas></div>
+<div class="f"><div><span>Finding</span>Dubai leads, then Abu Dhabi, then Sharjah.</div><div><span>Business meaning</span>Dubai carries the biggest share of sales.</div></div></div>
+<div class="c"><h3>Sales by channel</h3><div class="sub">Approximate values</div><div class="ch"><canvas id="ch5"></canvas></div>
+<div class="f"><div><span>Finding</span>Store is the top channel, then Website and MobileApp.</div><div><span>Business meaning</span>Physical stores remain the main revenue source; online channels are significant.</div></div></div>
+</div>
+
+<h2>Store view</h2>
+<div class="c"><h3>Sales by store (ranked)</h3><div class="sub">Approximate values · all 50 stores</div><div class="ch t"><canvas id="ch6"></canvas></div>
+<div class="f"><div><span>Finding</span>Store 41 ranks first and Store 03 last; stores sit in a tight range of about 1.43M to 1.50M.</div><div><span>Business meaning</span>Store sales are closely matched, so city differences come mainly from the number of stores.</div></div></div>
+
+<h2>Product and sales view</h2>
+<div class="g two">
+<div class="c"><h3>Sales vs profit – top product groups</h3><div class="sub" id="ps">Top 10 by profit</div><div class="ch"><canvas id="ch7"></canvas></div></div>
+<div class="c"><h3>High sales, lower profit products</h3><div class="sub">Above-median sales, below-median profit</div><table id="tb"></table>
+<div class="f"><div><span>Finding</span>Eight products sell strongly but earn relatively low profit. Grocery_Rice_1121 has the thinnest margin.</div></div></div></div>
+
+<h2>Inventory view</h2>
+<div class="g two">
+<div class="c"><h3>Store-product pairs at stockout risk</h3><div class="sub">High sales and low stock</div><div class="ch"><canvas id="ch8"></canvas></div>
+<div class="f"><div><span>Finding</span>2,098 of 8,735 store-product records sell above the median but hold below-median stock.</div><div><span>Business meaning</span>These are the first items to watch for stockouts.</div></div></div>
+<div class="c"><h3>Below reorder point</h3><div class="sub">Stock on hand vs reorder point</div><div style="padding:40px 0 10px"><div class="big">0</div><div class="sub">records below reorder point</div></div>
+<div class="f"><div><span>Finding</span>No store-product record is below its reorder point.</div><div><span>Business meaning</span>Replenishment is on track, but high-selling items still sit on thin stock.</div></div></div></div>
+
+<h2>Management takeaways</h2>
+<ul class="s">
+<li><b>Electronics carries the business.</b> It is the top category for both sales and profit.</li>
+<li><b>Sales are seasonal.</b> Plan for strong Jan–Feb and weak Sep–Nov.</li>
+<li><b>Dubai is the core market.</b> Watch performance there most closely.</li>
+<li><b>Stores lead, online follows.</b> Both matter for revenue.</li>
+<li><b>Watch stock on fast sellers.</b> 2,098 store-product pairs combine high sales with low stock.</li>
+<li><b>Check margins on 8 products.</b> They sell well but earn relatively low profit.</li></ul>
+<p class="note">Category, product group, high-sales/low-profit and inventory figures are exact. Monthly, store, city and channel values are approximate.</p>
+</div>
+<script>
+const CAT=[["Electronics",40790950.89,11848265.14],["Household",8190735.92,2360418.07],["Personal Care",8181799.29,2115959.34],["Grocery",5564702.41,1661022.56],["Snacks",4321275.25,1299444.11],["Dairy",4238161.64,1237884.73],["Beverages",1922157.59,574416.61]];
+const SUB=[["Batteries","Electronics",12530863.56,3961439.04],["Cables","Electronics",11490862.59,3393750.71],["Chargers","Electronics",9227916.96,2311019.26],["Mobile Accessories","Electronics",7541307.78,2182056.13],["Cleaning Supplies","Household",3138214.56,898445.37],["Paper Products","Household",2745043.37,743314.52],["Toothpaste","Personal Care",2403497.14,655592.68],["Skincare","Personal Care",2424275.35,551642.10],["Canned Goods","Grocery",1375868.80,449469.99],["Detergent",null,1330233.96,427244.32]];
+const M=[1.98,1.99,.83,1.20,1.71,1.10,1.59,1.53,.74,.75,.88,1.01,1.97,1.67,.74,1.49,1.27,1.05,1.55,1.59,.76,.83,.80,1.14,2.01,1.65,.99,1.39,1.11,1.12,1.40,1.45,.72,.80,.79,1.10,2.19,1.81,1.33,1.20,1.13,1.18,1.57,1.55,.75,.80,.81,1.01,2.02,1.75,1.58,.74,1.13,1.21,1.52,1.57,.75,.77];
+const MON=M.map((v,i)=>({l:(2021+Math.floor(i/12))+"-"+String(i%12+1).padStart(2,"0"),y:2021+Math.floor(i/12),v}));
+const STORES=[41,11,49,44,4,37,35,8,17,19,50,7,32,18,24,5,29,15,14,48,31,40,6,16,33,21,13,26,46,45,10,22,25,43,38,28,30,47,20,23,34,9,1,36,39,2,42,27,12,3];
+const LOW=[["Dairy_Cream_1015",216990.20,53024.38],["Grocery_Canned Goods_1029",221385.97,53295.53],["Grocery_Pasta_1196",240533.99,56561.85],["Grocery_Rice_1121",252178.55,36236.60],["Grocery_Spices_1128",210567.09,53687.09],["Household_Cleaning Supplies_1179",225473.13,59049.43],["Household_Paper Products_1028",321556.41,58348.01],["Personal Care_Soap_1156",279936.17,53765.73]];
+const TS=CAT.reduce((a,c)=>a+c[1],0),TP=CAT.reduce((a,c)=>a+c[2],0),TX=641798;
+const fm=n=>n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(0)+"K":n.toFixed(0);
+const $=id=>document.getElementById(id);
+const fc=$("fc"),fy=$("fy");
+fc.innerHTML='<option value="">All categories</option>'+CAT.map(c=>`<option>${c[0]}</option>`).join("");
+fy.innerHTML='<option value="">All years</option>'+[2021,2022,2023,2024,2025].map(y=>`<option>${y}</option>`).join("");
+Chart.defaults.font.family='"Inter","Segoe UI",system-ui,sans-serif';
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const ch={};
+function mk(id,cfg){if(ch[id])ch[id].destroy();cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:cfg.legend!==false,labels:{color:css("--mut")}}}},cfg.options||{});ch[id]=new Chart($(id),cfg)}
+function ax(fmt){return{x:{ticks:{color:css("--mut"),maxRotation:60},grid:{display:false}},y:{ticks:{color:css("--mut"),callback:fmt||(v=>fm(v))},grid:{color:css("--line")}}}}
+function render(){
+const cat=fc.value,yr=+fy.value||0,a=css("--a"),b=css("--b"),c=css("--c"),g=css("--g");
+const row=CAT.find(x=>x[0]===cat),S=row?row[1]:TS,P=row?row[2]:TP;
+$("kpis").innerHTML=[["Total Sales",fm(S)],["Total Profit",fm(P)],["Profit Margin",(P/S*100).toFixed(1)+"%"],
+...(row?[]:[["Transactions",TX.toLocaleString()],["Avg Sale per Transaction",(TS/TX).toFixed(2)],["Stores","50"],["Products (SKUs)","200"]])].map(k=>`<div class="c kpi"><small>${k[0]}</small><b>${k[1]}</b></div>`).join("");
+const mm=MON.filter(m=>!yr||m.y===yr);
+$("trsub").textContent=(yr?yr:"2021–2025")+" monthly sales · ≈"+mm.reduce((s,m)=>s+m.v,0).toFixed(1)+"M in period";
+mk("ch1",{type:"line",legend:false,data:{labels:mm.map(m=>m.l),datasets:[{data:mm.map(m=>m.v*1e6),borderColor:a,backgroundColor:a+"22",fill:true,tension:.25,pointRadius:3}]},options:{scales:ax(),plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>"Sales ≈ "+fm(x.raw)}}}}});
+mk("ch2",{type:"bar",data:{labels:CAT.map(x=>x[0]),datasets:[{label:"Sales",data:CAT.map(x=>x[1]),backgroundColor:CAT.map(x=>!cat||x[0]===cat?a:g)},{label:"Profit",data:CAT.map(x=>x[2]),backgroundColor:CAT.map(x=>!cat||x[0]===cat?b:g)}]},options:{scales:ax(),plugins:{tooltip:{callbacks:{label:x=>x.dataset.label+": "+fm(x.raw)}}}}});
+const sub=SUB.filter(s=>!cat||s[1]===cat);
+const t3=[...sub].sort((p,q)=>q[3]-p[3]);
+mk("ch3",{type:"bar",legend:false,data:{labels:t3.map(s=>s[0]),datasets:[{data:t3.map(s=>s[3]),backgroundColor:b}]},options:{indexAxis:"y",scales:{x:{ticks:{color:css("--mut"),callback:v=>fm(v)},grid:{color:css("--line")}},y:{ticks:{color:css("--mut")},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>"Profit: "+fm(x.raw)}}}}});
+mk("ch7",{type:"bar",data:{labels:sub.map(s=>s[0]),datasets:[{label:"Sales",data:sub.map(s=>s[2]),backgroundColor:a},{label:"Profit",data:sub.map(s=>s[3]),backgroundColor:b}]},options:{scales:ax(),plugins:{tooltip:{callbacks:{label:x=>x.dataset.label+": "+fm(x.raw)}}}}});
+$("ps").textContent=cat?"Top-10 product groups in "+cat:"Top 10 by profit";
+mk("ch4",{type:"bar",legend:false,data:{labels:["Dubai","Abu Dhabi","Sharjah"],datasets:[{data:[41.0e6,20.5e6,11.6e6],backgroundColor:[a,b,c]}]},options:{scales:ax(),plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>"≈ "+fm(x.raw)}}}}});
+mk("ch5",{type:"doughnut",data:{labels:["Store","Website","MobileApp","Amazon.ae","Noon"],datasets:[{data:[30.2,20.3,13.1,6.4,3.1],backgroundColor:[a,b,c,"#8e9aaf",g],borderWidth:0}]},options:{cutout:"62%",plugins:{tooltip:{callbacks:{label:x=>x.label+": ≈"+x.raw+"M ("+(x.raw/73.1*100).toFixed(0)+"%)"}}}}});
+const sv=STORES.map((s,i)=>1.50-i*(0.075/49));
+mk("ch6",{type:"bar",legend:false,data:{labels:STORES.map(s=>"Store "+String(s).padStart(2,"0")),datasets:[{data:sv.map(v=>v*1e6),backgroundColor:a}]},options:{scales:{x:{ticks:{color:css("--mut"),maxRotation:90,autoSkip:false,font:{size:9}},grid:{display:false}},y:{min:1.0e6,ticks:{color:css("--mut"),callback:v=>fm(v)},grid:{color:css("--line")}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>"≈ "+fm(x.raw)}}}}});
+mk("ch8",{type:"doughnut",data:{labels:["High sales, low stock","Other"],datasets:[{data:[2098,8735-2098],backgroundColor:[c,g],borderWidth:0}]},options:{cutout:"62%"}});
+$("tb").innerHTML="<tr><th>Product</th><th>Sales</th><th>Profit</th><th>Margin</th></tr>"+LOW.map(r=>`<tr><td>${r[0]}</td><td>${fm(r[1])}</td><td>${fm(r[2])}</td><td>${(r[2]/r[1]*100).toFixed(1)}%</td></tr>`).join("")}
+fc.onchange=fy.onchange=render;$("rs").onclick=()=>{fc.value="";fy.value="";render()};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
+render();
+</script></body></html>
