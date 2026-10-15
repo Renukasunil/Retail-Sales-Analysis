@@ -109,7 +109,7 @@ The work has two parts:
 
 ## Getting Started
 
-**Open the dashboard**
+**Download the Dashboard html file**
 
 Open `retail_dashboard.html` in a browser. No installation is needed.
 
